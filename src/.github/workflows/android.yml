@@ -1,0 +1,31 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Pull macroquad Android build image
+      run: docker pull notfl3/cargo-apk
+
+    - name: Build APK via Docker
+      run: |
+        docker run --rm \
+          -v $(pwd):/root/src \
+          -w /root/src \
+          notfl3/cargo-apk cargo quad-apk build --release
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: days-clone-apk
+        path: target/android-artifacts/release/apk/*.apk
+        retention-days: 30
